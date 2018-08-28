@@ -21,9 +21,8 @@ This is just a sandbox at the moment.  Security checks are not in place and thin
 2. Works best with custom responsive themes as Bartik is not responsive.
 3. Theme needs to be set before using Drupal Blocks, otherwise they will need to be redone.
 3. File uploads are very hackie (but functioning) and are not done the proper way I am sure.
-4. Theme and other settings are hard coded at the moment. 
-5. Newly added display of the page is causing errors with drag and dropping, and editing tags are being ignored.
-6. And many more to come... lol
+4. Some settings are hard coded at the moment. 
+5. And many more to come... lol
 
 ## Roadmap
 1. Keep breaking apart the default plugin into smaller more manageable plugins.
