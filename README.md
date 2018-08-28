@@ -26,14 +26,10 @@ This is just a sandbox at the moment.  Security checks are not in place and thin
 6. And many more to come... lol
 
 ## Roadmap
-1. Currently working on showing the entire page... and preventing it from being editable
-2. Finish drupal blocks and have the values set as a setting instead of ajaxed in.
-3. Keep breaking apart the default plugin into smaller more manageable plugins.
-4. Add in call to switch to an image style using traits.
-5. Figure out what is the best way to load assets for Admins since they have access to all files.
-6. Add security to current features.
-7. Create new blocks to import views, blocks, and other entities and make sure they are secure.
-8. Find a way to display an actual rendered page inside the editor with the header, footer, and other regions and make them non-editable. Then remove on header elements on store. (May only be available to saved entities.)
-9. Add the ability to select a blank page template or use default one.
-10. Clean up other found plugins to match the same programming patterns.
-11. Move the grapesjs library to the proper location. Possibly the /vendors directory.
+1. Keep breaking apart the default plugin into smaller more manageable plugins.
+2. Add in call to switch to an image style using traits.
+3. Figure out what is the best way to load assets for Admins since they have access to all files. Currently it just loads assets added by that user.
+4. Double check security to current features.
+5. Add configuration page to allow customization, and to allow limiting of Drupal Blocks. This will also help loads when lots of blocks are available by the theme.
+6. Add the ability to select a blank page template or use default one.
+7. Clean up other found plugins to match the same programming patterns.
