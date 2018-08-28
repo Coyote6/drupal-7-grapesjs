@@ -487,7 +487,7 @@
         $('#gjs').hide();
 
         // Add a button in its place.
-        $('#' + id).after('<div class="gjs-button-container" style="display: flex;align-items: center;justify-content: center;text-align: center;border: 1px solid #d1d1d1; height: 250px;"><div class="gjs-open button">Open Editor</div></div>').promise().done(function(){
+        $('#' + id).hide().after('<div class="gjs-button-container" style="display: flex;align-items: center;justify-content: center;text-align: center;border: 1px solid #d1d1d1; height: 250px;"><div class="gjs-open button">Open Editor</div></div>').promise().done(function(){
           $('.gjs-open').click(function(){
             $('#gjs').fadeIn().focus();
             $('body > *:not("#gjs")').addClass('not-gjs');
@@ -509,6 +509,7 @@
     else {
       $('body > *:not("#gjs")').removeClass('not-gjs');
       $('#gjs').hide();
+      $('#' + id).hide();
       $('.gjs-button-container').show();
       Drupal.grapesjs.getFullPageHtml (id);
     }
@@ -528,6 +529,7 @@
   };
 
   Drupal.grapesjs.off = function (id) {
+    $('#' + id).show();
     if (!Drupal.grapesjs.instances || typeof(Drupal.grapesjs.instances[id]) == 'undefined') {
       return;
     }
