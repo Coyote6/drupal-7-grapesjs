@@ -1,0 +1,745 @@
+<?php
+   
+  
+// Includes
+require_once drupal_get_path ('module', 'grapesjs') . DIRECTORY_SEPARATOR . 'grapesjs.inc';
+
+
+/**
+ * Implements hook_permission()
+ *
+ * @return array()
+ */
+function grapesjs_permission () {
+	
+	// Set up permission to edit game room games.
+	$permissions = [
+		'administer grapesjs' => [
+			'title' => t ('Administer GrapesJs Settings'), 
+			'description' => t ('Access to administer all parts of the GrapesJs module.')
+		],
+		'access grapesjs' => [
+			'title' => t ('Access to GrapesJs editor.'), 
+			'description' => t ('Ability to use and upload to GrapesJs via the editor.')
+		],
+	];
+
+	// Return the permissions array.
+	return $permissions;
+	
+}
+
+
+/**
+ * Implements hook_menu()
+ *
+ * @return array()
+ */
+function grapesjs_menu () {
+  
+  $items = [
+    GRAPESJS_AJAX_URL => [
+      'title' => t ('GrapesJs'),
+  		'page callback' => 'grapesjs_ajax',
+  		'page arguments' => [2],
+  		'access arguments' => ['access grapesjs'],
+      'type' => MENU_CALLBACK,
+    ]
+  ];
+  
+  return $items;
+  
+}
+
+
+/**
+ * Implements hook_wysiwyg_plugin()
+ *
+ * @return array()
+ *
+function grapesjs_wysiwyg_plugin ($editor, $version) {
+ 
+  switch ($editor) {
+   case 'ckeditor':
+    return array(
+     'my_plugin' => array(
+      'path' => drupal_get_path('module', 'my_module') . '/my_plugin',
+      'buttons' => array(
+       'my_plugin_button' => t('Do something awesome'),
+      ),
+      'load' => TRUE,
+     ),
+    );
+    break;
+  }
+ }
+ */
+ 
+/**
+ * Implementation of hook_element_info_alter().
+ *
+ * Replace the textarea with GrapesJs processing using a callback function (grapesjs_pre_render_text_format).
+ */
+function grapesjs_element_info_alter (&$types) {
+  $types['text_format']['#pre_render'][] = 'grapesjs_pre_render_text_format';
+}
+/*
+// Replace the default text_format #process function in order to add support
+  // for editors.
+  if (isset($type['text_format'])) {
+    // Locate the default file.module #process function.
+    $filter_process_format_location = array_search('filter_process_format', $type['text_format']['#process']);
+
+    // Replace it with the editor.module #process function.
+    array_splice($type['text_format']['#process'], $filter_process_format_location, 1, 'editor_process_format');
+  }
+
+  // Editor drops textarea.js in favor of CSS3 resizing of textareas.
+  // Change the default value of #resizeable for textarea accordingly.
+  if (isset($type['textarea'])) {
+    $type['textarea']['#resizable'] = 'vertical';
+  }
+*/
+
+
+/**
+ * Helper function to add in token replacements for the GrapeJs Editor.
+ *
+ * @param $element
+ *   A fully populated form element to add the editor to.
+ * @return
+ *   The same $element with extra CKEditor markup and initialization.
+ */
+function grapesjs_pre_render_text_format ($element) {
+
+  static $init = FALSE;
+  if (!isset($element['#format'])) {
+    return $element;
+  }
+
+  if ($init === FALSE) {
+
+    $entity_type = $element['#entity_type'];
+    $entity = $element['#entity'];
+    $wrapper = entity_metadata_wrapper ($entity_type, $entity);
+    $id = $wrapper->getIdentifier();
+    $url = '';
+    if ($id) {
+      $url = entity_uri ($entity_type, $entity);
+    }
+    $input_formats = [
+      'visual_editor' => 'visual_editor'
+    ];
+    $settings = [
+      'input_formats' => $input_formats,
+      'url' => $url, 
+#
+# ToDo
+# Create a config file and settings form to set the plugins and their options.
+#
+      'plugins' => [
+//        'test',
+        
+        'drupalStorageTextfield', 
+        'drupalDefaultEditor',
+        'divBlock',
+        'rowBlock',
+        'columnBlock',
+        'gjs-plugin-ckeditor',
+        'txtBlock',
+        'imageBlock',
+ //       'gjs-blocks-flexbox', 
+        'drupalBlocks', 
+        'htmlBlock',
+      ],
+      'pluginOpts' => [
+        'drupalDefaultEditor' => [],
+ /*       'gjs-blocks-flexbox' => [
+          'flexboxBlock' => [
+            'category' => 'Layout'
+          ]
+        ]*/
+      ],
+      'pluginOptionsFromJs' => [
+        'drupalDefaultDefault' => [
+          'element' => 'element',
+          'format' => 'format'
+        ],
+        'drupalStorageTextfield' => [
+          'element' => 'element',
+          'format' => 'format'
+        ],
+        'drupalBlocks' => [
+          'element' => 'element',
+          'blocks' => 'Drupal.settings.grapesjs.blocks'
+        ]
+      ],
+      'blocks' => _grapesjs_get_blocks(),
+      'assets' => _grapesjs_get_assets(),
+      'entity_type' => $entity_type
+    ];
+    drupal_add_js (['grapesjs' => $settings], 'setting');
+    
+    $path = 'sites/all/libraries/grapesjs';
+    $ck_path = 'sites/all/libraries/ckeditor';
+    if (is_callable ('libraries_get_path')) {
+      $path = libraries_get_path('grapesjs');
+      $ck_path = libraries_get_path('ckeditor');
+    }
+    drupal_add_css ($path . '/dist/css/grapes.min.css');
+    drupal_add_css (GRAPESJS_PATH . '/css/editor.css');
+    drupal_add_js ($path . '/dist/grapes.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-drupal-storage-textfield.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-drupal-default-editor.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-div-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-row-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-column-block.js');
+    drupal_add_js ($ck_path . '/ckeditor.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-plugin-ckeditor.min.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-text-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-image-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-drupal-blocks.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-html-block.js');
+//    drupal_add_js (GRAPESJS_PATH . '/js/test.js');
+    
+    drupal_add_js (GRAPESJS_PATH . '/js/editor.js');
+    $init = TRUE;
+  }
+
+  if (isset($element['value'])) {
+    if (!isset($element['format'])) {
+      return $element;
+    }
+    if (isset($element['summary'])) {
+      $element['value'] = _grapesjs_load_by_field ($element['value'], $element['format']['format'], TRUE, $element['summary']['#id']);
+      $element['summary'] = _grapesjs_load_by_field ($element['summary'], $element['format']['format'], FALSE);
+    }
+    else {
+      $element['value'] = _grapesjs_load_by_field ($element['value'], $element['format']['format']);
+    }
+  }
+  else {
+    $element = _grapesjs_load_by_field ($element, $element['#format']);
+  }
+
+  return $element;
+  
+}
+
+
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function grapesjs_module_implements_alter (&$implementations, $hook) {
+  if ($hook == 'element_info_alter' && isset ($implementations['grapejs'])) {
+    // Move the grapesjs.module implementation of hook_element_info_alter() to the
+    // end of the list so that other modules can work with the default
+    // filter.module text_format #process function before it is replaced.
+    // module_implements() iterates through $implementations with a foreach loop
+    // which PHP iterates in the order that the items were added, so to move an
+    // item to the end of the array, we remove it and then add it.
+    $group = $implementations['grapejs'];
+    unset($implementations['grapejs']);
+    $implementations['grapejs'] = $group;
+  }
+}
+
+/**
+ * Implements hook_entity_presave()
+ */
+function grapesjs_entity_presave ($entity, $type) {
+
+  $fields = field_info_instances ($type, $entity->type);
+  $lang = LANGUAGE_NONE;
+  if (property_exists ($entity, 'language')) {
+    $lang = $entity->language;
+  }
+        
+  $wrapper = entity_metadata_wrapper($type, $entity); 
+  $id = $wrapper->getIdentifier();     
+    
+  $q = db_select ('file_usage', 'fu')
+                  ->fields('fu')
+                  ->condition('module','grapesjs')
+                  ->condition('type', $type)
+                  ->condition('id', $id)
+                  ->execute();
+  
+  $used_files = [];    
+  while ($row = $q->fetchAssoc()) {
+    $used_files[$row['id']] = $row;
+  }
+                              
+  foreach ($fields as $fn => $f) {
+    $finfo = field_info_field ($fn);
+   if (
+      ($finfo['type'] == 'text_with_summary' || $finfo['type'] == 'text_with_summary') &&
+      property_exists ($entity, $fn) && is_array ($entity->$fn) && 
+      isset ($entity->$fn[$lang]) && is_array ($entity->$fn[$lang])
+    ) {
+
+      $key = null;
+      foreach ($entity->$fn[$lang] as $delta => &$item) {
+        if (isset ($item['value']) && is_string ($item['value'])) {
+          $item['value'] = preg_replace_callback('|<!--data-gjs-files=(.*?)-->|i', function ($matches) use($used_files, $type, $id) {
+            if (isset ($matches[1])) {
+              // Remove the beginning and end brackets.
+              $id_str = substr($matches[1], 1, strlen ($matches[1]) - 2);
+              $ids = explode (',', $id_str);
+              foreach ($ids as $fid) {
+                if (isset ($used_files[$fid])) {
+                  unset ($used_files[$fid]);
+                }
+                else {
+                  $file = file_load($fid);
+                  if ($file) {
+                    if ($file->status == 0) {
+                      $file->status = 1;
+                      file_save($file);                   
+                    }
+                    file_usage_add ($file, 'grapesjs', $type, $id, 1);
+                  }
+                }
+              }
+              // Remove used files if they were set by grapejs.
+              foreach ($used_files as $fid => $f) {
+                $file = file_load ($fid);
+                if ($file) {
+                  file_usage_delete ($file, 'grapesjs', $type, $id, 0);
+                }
+              }
+            }
+            return '';
+          }, $item['value']);
+        }
+      }
+    }
+  }
+
+}
+
+
+/**
+ * Load CKEditor for field ID
+ *
+ * @param object $field
+ * @param string $format
+ *
+ * @return object
+ *
+ */
+function _grapesjs_load_by_field ($field, $format, $show_toggle = TRUE, $add_fields_to_toggle = FALSE) {
+  
+  global $user, $theme;
+  static $processed_ids = [];
+  static $is_running = FALSE;
+  $use_editor = FALSE;
+  $format_arr = FALSE;
+  $suffix = '';
+
+  if (is_array ($format)) {
+    $format_arr = $format;
+    $format = isset ($format_arr['#value']) ? $format_arr['#value'] : $format_arr['#default_value'];
+  }
+
+  if (!isset ($field['#id'])) {
+    return $field;
+  }
+
+  if (isset ($processed_ids[$field['#id']])) {
+    return $field;
+  }
+
+  if (key_exists ('#wysiwyg', $field) && !$field['#wysiwyg']) {
+    return $field;
+  }
+
+  if (isset ($field['#access']) && !$field['#access']) {
+    return $field;
+  }
+
+  if ($field['#id'] == "edit-log") {
+    return $field;
+  }
+
+  if (isset($field['#attributes']['disabled']) && $field['#attributes']['disabled'] == 'disabled') {
+    return $field;
+  }
+
+  drupal_add_js(['grapesjs' => ['textarea_default_format' =>[$field['#id'] => $format]]], 'setting');
+  drupal_add_css (GRAPESJS_PATH . '/css/display.css');
+
+  if (!isset($processed_ids[$field['#id']])) {
+    $processed_ids[$field['#id']] = [];
+  }
+/*
+  $global_profile = ckeditor_profile_load('CKEditor Global Profile');
+  $profile = ckeditor_get_profile($format);
+  $host = base_path();
+
+  if ($profile === FALSE) {
+    $ckeditor_in_default_format = FALSE;
+    foreach ((array) $format_arr['#options'] as $key => $val) {
+      if ($key == $format)
+        continue;
+      if ($profile = ckeditor_get_profile($key)) {
+        $use_editor = $key;
+        break;
+      }
+    }
+    if ($use_editor === FALSE) {
+      return $field;
+    }
+  }
+  else {
+    $ckeditor_in_default_format = TRUE;
+  }
+
+  if ($settings = ckeditor_profiles_compile($format)) {
+    $ckeditor_on = ($settings['default'] == 't' && $profile->settings['default'] == 't') ? TRUE : FALSE;
+  }
+  elseif ($settings = ckeditor_profiles_compile($use_editor)) {
+    $ckeditor_on = FALSE;
+  }
+  else {
+    return $field;
+  }
+*/
+
+  $textarea_id = $field['#id'];
+  $class[] = 'grapesjs-mod';
+
+/*
+  if ($settings) {
+    $textarea_id = $field['#id'];
+    $class[] = 'ckeditor-mod';
+    $_ckeditor_ids[] = $textarea_id;
+
+    //settings are saved as strings, not booleans
+    if ($settings['show_toggle'] == 't' && $show_toggle) {
+
+      if ($add_fields_to_toggle !== FALSE) {
+        if (is_array($add_fields_to_toggle)) {
+          $toggle_fields = "['" . $textarea_id . "','" . implode("','", $add_fields_to_toggle) . "']";
+        }
+        else {
+          $toggle_fields = "['" . $textarea_id . "','" . $add_fields_to_toggle . "']";
+        }
+      }
+      else {
+        $toggle_fields = "['{$textarea_id}']";
+      }
+
+      $wysiwyg_link = '';
+      $wysiwyg_link .= "<a class=\"ckeditor_links\" style=\"display:none\" href=\"javascript:void(0);\" onclick=\"javascript:Drupal.ckeditorToggle({$toggle_fields},'" . str_replace("'", "\\'", t('Switch to plain text editor')) . "','" . str_replace("'", "\\'", t('Switch to rich text editor')) . "');\" id=\"switch_{$textarea_id}\">";
+      $wysiwyg_link .= $ckeditor_on ? t('Switch to plain text editor') : t('Switch to rich text editor');
+      $wysiwyg_link .= '</a>';
+
+      // Make sure to append to #suffix so it isn't completely overwritten
+      $suffix .= $wysiwyg_link;
+    }
+
+    $editor_local_path = ckeditor_path('local');
+    $editor_url_path = ckeditor_path('url');
+
+    if (!$is_running) {
+      // By default sessions are not started automatically for anonymous users.
+      // Start one for editing content so that we had a consistent token that is used in XSS filter.
+      if (isset($field['#entity']) && !empty($field['#entity']->created) && empty($user->uid)) {
+        drupal_session_start();
+        $_SESSION['ckeditor_anonymous_user'] = true;
+        drupal_page_is_cacheable(FALSE);
+      }
+
+      if (!$ckeditor_in_default_format) {
+        $load_method = 'ckeditor_basic.js';
+        $load_time_out = 0;
+      }
+      elseif (isset($profile->settings['ckeditor_load_method'])) {
+        $load_method = $profile->settings['ckeditor_load_method'];
+        $load_time_out = $profile->settings['ckeditor_load_time_out'];
+      }
+      if ($editor_local_path != '<URL>') {
+        drupal_add_js('window.CKEDITOR_BASEPATH = "' . ckeditor_path('relative') . '/"', array('type' => 'inline', 'weight' => -100));
+      }
+      drupal_add_js(ckeditor_module_path('url') . '/includes/ckeditor.utils.js', array('type' => 'file', 'scope' => 'footer'));
+
+      $preprocess = FALSE;
+      if (isset($global_profile->settings['ckeditor_aggregate']) && $global_profile->settings['ckeditor_aggregate'] == 't') {
+        $preprocess = TRUE;
+      }
+
+      if ($editor_local_path == '<URL>') {
+        drupal_add_js($editor_url_path . '/ckeditor.js', array('type' => 'external', 'scope' => 'footer'));
+      }
+      else if (isset($load_method) && file_exists($editor_local_path . '/' . $load_method)) {
+        drupal_add_js($editor_url_path . '/' . $load_method, array('type' => 'file', 'scope' => 'footer', 'preprocess' => $preprocess));
+        if ($load_method == 'ckeditor_basic.js') {
+          drupal_add_js('CKEDITOR.loadFullCoreTimeout = ' . $load_time_out . ';', array('type' => 'inline', 'scope' => 'footer'));
+          drupal_add_js(array('ckeditor' => array('load_timeout' => TRUE)), 'setting');
+        }
+      }
+      else {
+        drupal_add_js($editor_url_path . '/ckeditor.js', array('type' => 'file', 'scope' => 'footer', 'preprocess' => $preprocess));
+      }
+      $ckeditor_url = ckeditor_path('relative');
+      if ($ckeditor_url == '<URL>') {
+        $ckeditor_url = ckeditor_path('url');
+      }
+      $ckeditor_url .= '/';
+      drupal_add_js(array('ckeditor' => array('module_path' => ckeditor_module_path('relative'), 'editor_path' => $ckeditor_url)), 'setting');
+      if (module_exists('paging')) {
+        drupal_add_js(array('ckeditor' => array('pagebreak' => TRUE)), 'setting');
+      }
+      if (module_exists('linktocontent_node')) {
+        drupal_add_js(array('ckeditor' => array('linktocontent_node' => TRUE)), 'setting');
+      }
+      if (module_exists('linktocontent_menu')) {
+        drupal_add_js(array('ckeditor' => array('linktocontent_menu' => TRUE)), 'setting');
+      }
+      if (module_exists('pagebreak')) {
+        drupal_add_js(array('ckeditor' => array('pagebreak' => TRUE)), 'setting');
+      }
+      if (module_exists('smart_paging')) {
+        drupal_add_js(array('ckeditor' => array('pagebreak' => TRUE)), 'setting');
+      }
+      drupal_add_js(array('ckeditor' => array('ajaxToken' => drupal_get_token('ckeditorAjaxCall'), 'xss_url' => url('ckeditor/xss'))), 'setting');
+      $is_running = TRUE;
+    }
+
+    drupal_add_js(array('ckeditor' => array('theme' => $theme)), 'setting');
+    if (!empty($settings)) {
+      drupal_add_js(array('ckeditor' => array('elements' => array($textarea_id => $format))), 'setting');
+    }
+    if (!empty($ckeditor_on)) {
+      drupal_add_js(array('ckeditor' => array('autostart' => array($textarea_id => $ckeditor_on))), 'setting');
+    }
+    //[#1473010]
+    if (isset($settings['scayt_sLang'])) {
+      drupal_add_js(array('ckeditor' => array('scayt_language' => $settings['scayt_sLang'])), 'setting');
+    }
+    elseif (!empty($field["#language"]) && $field["#language"] != LANGUAGE_NONE) {
+      drupal_add_js(array('ckeditor' => array('scayt_language' => ckeditor_scayt_langcode($field["#language"]))), 'setting');
+    }
+
+    // Remember extra information and reuse it during "Preview"
+    $processed_ids[$field['#id']]['suffix'] = $suffix;
+    $processed_ids[$field['#id']]['class'] = $class;
+
+    if (empty($field['#suffix'])) {
+      $field['#suffix'] = $suffix;
+    }
+    else {
+      $field['#suffix'] .= $suffix;
+    }
+
+    
+  }*/
+  if (!isset ($field['#attributes'])) {
+    $field['#attributes'] = [];
+  }
+  if (!isset ($field['#attributes']['class']) || empty($field['#attributes']['class'])) {
+    $field['#attributes']['class'] = $class;
+  }
+  else {
+    $field['#attributes']['class'] = array_merge($field['#attributes']['class'], $class);
+  }
+   
+  if (isset ($field['#field_name']) && isset ($field['#delta'])) {
+    $field['#attributes']['data-field-name'] = $field['#field_name'];
+    $field['#attributes']['data-field-delta'] = $field['#delta'];    
+  } 
+
+  return $field;
+}
+
+
+function _grapesjs_get_blocks () {
+
+  $blocks = _grapesjs_load_blocks_for_default_theme();
+  
+  $loaded_blocks =& drupal_static(__FUNCTION__);
+  if (!isset($loaded_blocks)) {
+
+    $loaded_blocks = [];
+    foreach ($blocks as $k => &$v) {
+      
+      // Remove unwanted blocks because of security, user interface, and/or infinite loop reasons.
+      if (
+        ($v['module'] == 'system' && $v['delta'] == 'main') ||
+        ($v['module'] == 'devel' && $v['delta'] == 'execute_php') ||
+        ($v['module'] == 'devel' && $v['delta'] == 'switch_user') 
+      ) {
+        unset ($blocks[$k]);
+        continue;
+      }
+      
+      $loaded_blocks[$v['bid']] = $v;
+      
+      $loaded_blocks[$v['bid']]['rendered'] = _grapesjs_render_block_content ($v['module'], $v['delta']);
+    
+    }
+    
+  }
+  
+  return $loaded_blocks;
+  
+}
+
+
+/**
+ * Helper function to find and render a block.
+ */
+function _grapesjs_render_block_content($module, $delta) {
+  $output = '';
+  if ($block = block_load($module, $delta)) {
+    if ($build = module_invoke($module, 'block_view', $delta)) {
+      $delta = str_replace('-', '_', $delta);
+      drupal_alter(array('block_view', "block_view_{$module}_{$delta}"), $build, $block);
+
+      if (!empty($build['content'])) {
+        return is_array($build['content']) ? render($build['content']) : $build['content'];
+      }
+    }
+  }
+  return $output;
+}
+
+
+function _grapesjs_get_assets () {
+  
+  global $user;
+
+
+  // Select all used files by id.
+  $query = db_select('file_managed', 'fu')
+    ->fields('fu', ['fid'])
+    ->condition('fu.uid', $user->uid);
+
+  // Load all file ids in an array.
+  $fids = $query->execute()->fetchCol();
+
+  // Return the file objects.
+  $fileObjs = file_load_multiple($fids);
+
+  $files = [];  
+  foreach ($fileObjs as $fid => $fo) {
+    $url = file_create_url($fo->uri);
+    $url = parse_url($url);
+    $url = $url['path'];
+
+    $files[$fo->fid] = [
+      'fid' => $fo->fid,
+      'src' => $url,
+      'size' => $fo->filesize,
+      'filemime' => $fo->filemime,
+    ];
+  }
+
+  return $files;
+   
+}
+
+
+function grapesjs_preprocess_field (&$vars, $hook) {
+
+  $element = $vars['element'];
+
+  if (isset ($element['#field_type']) && ($element['#field_type'] == 'text_with_summary' || $element['#field_type'] == 'text')) {
+    
+    
+# ToDo
+#
+# Add a permission to grant users access to place blocks
+# Remove any block placement on save of content if user does not have permission...
+#
+
+    $vars['classes_array'][] = 'grapesjs-editable-field';
+   
+    $attach_lib = false;
+
+    foreach ($vars['items'] as $delta => &$item) {
+        
+      $attr_array = [];
+      if (isset ($items['item_attributes_array'][$delta])) {
+        $attr_array = $items['item_attributes_array'][$delta];
+      }
+      if (!isset ($attr_array['class'])) {
+        $attr_array['class'] = [];
+      }
+      $attr_array['class'][] = 'grapesjs-editable-field-item';
+      $attr_array['data-grapesjs-field'] = $element['#field_name'];
+      $attr_array['data-grapesjs-delta'] = $delta;
+      $attrs = drupal_attributes ($attr_array);
+    
+      
+      $attach_lib = true;
+      $html = preg_replace_callback ('|\[block\](.*?)\[\/block\]|ism', function ($matches) {
+
+        if (!isset ($matches[1])) {
+          return $matches[0];
+        }
+
+        $bid = trim($matches[1]);
+        return _grapesjs_render_block_by_id ($bid);         
+        
+      }, $item['#markup']);
+      $item['#markup'] = '<div ' . $attrs . '>' . $html . '</div>';
+    }
+    
+    if ($attach_lib) {
+      drupal_add_js (GRAPESJS_PATH . '/js/responsive-resizing.js');
+    }
+  }
+}
+
+
+function _grapesjs_load_blocks () {
+  $blocks =& drupal_static(__FUNCTION__);
+  if (!isset($blocks)) {
+    module_load_include('inc', 'block', 'block.admin');
+    global $theme_key;
+    $blocks = block_admin_display_prepare_blocks ($theme_key);
+  }
+  return $blocks;
+}
+
+function _grapesjs_load_blocks_for_default_theme () {
+  $blocks =& drupal_static(__FUNCTION__);
+  if (!isset($blocks)) {
+    module_load_include('inc', 'block', 'block.admin');
+    $theme_key = variable_get ('theme_default','none');
+    $blocks = block_admin_display_prepare_blocks ($theme_key);
+  }
+  return $blocks;
+}
+
+function _grapesjs_get_sorted_blocks () {
+  $sorted =& drupal_static(__FUNCTION__);
+  if (!isset ($sorted)) {
+    $blocks = _grapesjs_load_blocks();
+    $sorted = [];
+    foreach ($blocks as $k => $b) {
+      $sorted[$b['bid']] = $b;
+    }
+  }
+  return $sorted;
+}
+
+function _grapesjs_render_block_by_id ($id) {
+  $blocks =& drupal_static(__FUNCTION__);
+  if (!isset ($blocks)) {
+    $blocks = [];
+  }
+  if (!isset ($blocks[$id])) {
+    $sorted = _grapesjs_get_sorted_blocks();
+    if (isset ($sorted[$id])) {
+      $blocks[$id] = _grapesjs_render_block_content ($sorted[$id]['module'], $sorted[$id]['delta']);
+    }
+    else {
+      $blocks[$id] = '';
+    }
+  }
+  return $blocks[$id];
+}
