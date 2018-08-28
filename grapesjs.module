@@ -119,6 +119,8 @@ function grapesjs_pre_render_text_format ($element) {
 
   if ($init === FALSE) {
 
+    $theme_key = variable_get ('theme_default','none');
+
     $entity_type = $element['#entity_type'];
     $entity = $element['#entity'];
     $wrapper = entity_metadata_wrapper ($entity_type, $entity);
@@ -131,6 +133,7 @@ function grapesjs_pre_render_text_format ($element) {
       'visual_editor' => 'visual_editor'
     ];
     $settings = [
+      'theme' => $theme_key,
       'input_formats' => $input_formats,
       'url' => $url, 
 #
