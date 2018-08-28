@@ -1,8 +1,0 @@
-name = GrapesJs Editor
-description = Allows editor to be switched to a GrapesJs editor for fast page creation. Great for sales pages and use by clients.
-package = User interface
-core = 7.x
-
-dependencies[] = jquery_update
-dependencies[] = entity
-
