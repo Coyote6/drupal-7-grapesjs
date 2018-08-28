@@ -1,7 +1,7 @@
 # WARNING!
 This is just a sandbox at the moment.  Security checks are not in place and things are probably not done the proper way.  Use at your own risk!
 
-[Drupal 8 version can be found here]()... it is not as up-to-date as this one at the time.  The JavaScripts and plugins on this Drupal 7 version are a bit more complete.
+[Drupal 8 version can be found here](https://github.com/Coyote6/drupal-8-grapesjs)... it is not as up-to-date as this one at the time.  The JavaScripts and plugins on this Drupal 7 version are a bit more complete.
 
 ## To Install & Configure:
 1. Place module in /sites/all/modules/custom folder or similar Drupal 7 module location.
