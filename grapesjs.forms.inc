@@ -46,12 +46,9 @@ function grapesjs_upload_form_submit ($form, &$form_state) {
   ];
   $count = 0;
   
-  
-  
   // Save multiple files
   $num_files = count($_FILES['files']['name']);
   for ($i = 0; $i < $num_files; $i++) {
-    dsm($_FILES['files']);
     $file = file_save_upload ($i, $form['files']['#upload_validators'], $form['files']['#upload_location'], FILE_EXISTS_RENAME); 
     if ($uploaded) {
       $count++;
