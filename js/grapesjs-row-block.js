@@ -38,7 +38,7 @@ grapesjs.plugins.add ('rowBlock', function(editor, options) {
               $(el).attr('data-type') == 'row-block'
             ) {
     					return {
-      					type: 'div',
+      					type: 'row',
                 'data-type':'row-block'
       				};
     				}

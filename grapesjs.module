@@ -659,6 +659,8 @@ function grapesjs_preprocess_field (&$vars, $hook) {
 #
 
     $vars['classes_array'][] = 'grapesjs-editable-field';
+    drupal_add_css (GRAPESJS_PATH . '/css/display.css');
+
    
     $attach_lib = false;
 

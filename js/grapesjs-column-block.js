@@ -38,7 +38,7 @@ grapesjs.plugins.add ('columnBlock', function(editor, options) {
               $(el).attr('data-type') == 'column-block'
             ) {
     					return {
-      					type: 'div',
+      					type: 'column',
                 'data-type':'column-block'
       				};
     				}
