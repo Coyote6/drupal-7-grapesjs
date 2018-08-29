@@ -344,11 +344,11 @@
       });
       
       var rr = document.createElement('script');
-      rr.src = "/sites/all/modules/custom/grapesjs/js/responsive-resizing.js";
+      rr.src = Drupal.settings.grapesjs.modulePath + "/js/responsive-resizing.js";
       iframeDoc.head.appendChild(rr);
       
       var s = document.createElement('style');
-      s.innerHTML = '*[data-highlightable="1"]{min-height: 20px;min-width: 10px;}.gjs-edit-zone{border:2px dashed orange;margin: 0 -2px;}';
+      s.innerHTML = '*[data-highlightable="1"]{min-height: 20px;min-width: 10px;}.gjs-edit-zone{border:2px dashed orange;margin: 0 -2px;padding: 10px 0;}';
       iframeDoc.head.appendChild(s);
       
       Drupal.grapesjs.instance.iframe = iframeDoc;
@@ -384,7 +384,7 @@
     Drupal.grapesjs.instance.head = head;
     
     // Return just the default value if the url can't be found.
-    if (url == '') {
+    if (defaultHtml.trim() == '' || url == '') {
       Drupal.grapesjs.initGrapes (id, defaultHtml);
       return;
     } 
@@ -572,7 +572,7 @@
       var selFormat = $("#" + id.substr(0, id.lastIndexOf("-")) + "-format--2");
       
       // Turn on the editor if it is the input type.
-      if (typeof(Drupal.settings.grapesjs.input_formats[$(selFormat).val()]) != 'undefined'){
+      if (typeof(Drupal.settings.grapesjs.inputFormats[$(selFormat).val()]) != 'undefined'){
         Drupal.grapesjs.on(id);
       }
       
@@ -583,7 +583,7 @@
             $('#'+id).val(Drupal.grapesjs.instances[id].getData());
           }
           Drupal.grapesjs.off(id);
-          if (typeof(Drupal.settings.grapesjs.input_formats[$(this).val()]) != 'undefined'){
+          if (typeof(Drupal.settings.grapesjs.inputFormats[$(this).val()]) != 'undefined'){
             Drupal.grapesjs.on(id);
           }
           else {

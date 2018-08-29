@@ -9,6 +9,7 @@ grapesjs.plugins.add('htmlBlock', function(editor, options) {
   function addEditor() {
     editor.Commands.add("openHtmlCodeEditor", {
       run: function(editor, sender, data) {
+        
         var component = editor.getSelected();
 
         var codeViewer = editor.CodeManager.getViewer("CodeMirror").clone();
@@ -53,8 +54,8 @@ grapesjs.plugins.add('htmlBlock', function(editor, options) {
   };
 
   function addComponent() {
+    
     var defaultType = editor.DomComponents.getType('default');
-
     var _initToolbar = defaultType.model.prototype.initToolbar;
 
     editor.DomComponents.addType('htmlCode', {
@@ -72,7 +73,12 @@ grapesjs.plugins.add('htmlBlock', function(editor, options) {
       }, {
         isComponent: function(el) {
           if (typeof el.hasAttribute == "function" && el.hasAttribute("data-html-code")) {
-            return {type: "html-code"};
+            return {
+              type: "htmlCode",
+              attributes : {
+                "data-html-code" : ''
+              }
+            };
           }
         }
       }),

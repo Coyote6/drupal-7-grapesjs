@@ -113,14 +113,13 @@ function grapesjs_element_info_alter (&$types) {
 function grapesjs_pre_render_text_format ($element) {
 
   static $init = FALSE;
-  if (!isset($element['#format'])) {
+  if (!isset($element['#format']) || !isset($element['#entity_type']) || !isset ($element['#entity'])) {
     return $element;
   }
 
   if ($init === FALSE) {
 
     $theme_key = variable_get ('theme_default','none');
-
     $entity_type = $element['#entity_type'];
     $entity = $element['#entity'];
     $wrapper = entity_metadata_wrapper ($entity_type, $entity);
@@ -134,7 +133,8 @@ function grapesjs_pre_render_text_format ($element) {
     ];
     $settings = [
       'theme' => $theme_key,
-      'input_formats' => $input_formats,
+      'modulePath' => '/' . GRAPESJS_PATH,
+      'inputFormats' => $input_formats,
       'url' => $url, 
 #
 # ToDo
