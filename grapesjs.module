@@ -148,15 +148,49 @@ function grapesjs_pre_render_text_format ($element) {
         'divBlock',
         'rowBlock',
         'columnBlock',
-        'gjs-plugin-ckeditor',
+        'ckeditor',
         'txtBlock',
+        'h1Block',
+        'h2Block',
+        'h3Block',
+        'h4Block',
+        'h5Block',
+        'h6Block',
         'imageBlock',
+        'linkBlock',
  //       'gjs-blocks-flexbox', 
         'drupalBlocks', 
         'htmlBlock',
       ],
       'pluginOpts' => [
         'drupalDefaultEditor' => [],
+        'ckeditor' => [
+          'options' => [
+            'removeDialogTabs' => '',
+            'toolbar' => [
+              [
+                'name' => 'clipboard',
+                'items' => ['Cut', 'Copy', 'Paste', '-', 'Undo', 'Redo', '-', 'Scayt']
+              ],
+              [
+                'name' => 'links',
+                'items' => ['Link', 'Unlink', 'Anchor']
+              ],
+              [
+                'name' => 'basicStyles',
+                'items' => ['Bold', 'Italic', 'Underline', 'Strike', '-', 'Remove Format']
+              ],
+              [
+                'name' => 'paragraph',
+                'items' => ['NumberedList', 'BullettedList', '-', 'Outdent', 'Indent', '-', 'Blockquote']
+              ],
+              [
+                'name' => 'styles',
+                'items' => ['Format']
+              ]
+            ]
+          ]
+        ]
  /*       'gjs-blocks-flexbox' => [
           'flexboxBlock' => [
             'category' => 'Layout'
@@ -198,9 +232,16 @@ function grapesjs_pre_render_text_format ($element) {
     drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-row-block.js');
     drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-column-block.js');
     drupal_add_js ($ck_path . '/ckeditor.js');
-    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-plugin-ckeditor.min.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-ckeditor.js');
     drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-text-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-h1-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-h2-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-h3-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-h4-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-h5-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-h6-block.js');
     drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-image-block.js');
+    drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-link-block.js');
     drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-drupal-blocks.js');
     drupal_add_js (GRAPESJS_PATH . '/js/grapesjs-html-block.js');
 //    drupal_add_js (GRAPESJS_PATH . '/js/test.js');
@@ -253,6 +294,10 @@ function grapesjs_module_implements_alter (&$implementations, $hook) {
  */
 function grapesjs_entity_presave ($entity, $type) {
 
+  if (!property_exists($entity, 'type')) {
+    return;
+  }
+  
   $fields = field_info_instances ($type, $entity->type);
   $lang = LANGUAGE_NONE;
   if (property_exists ($entity, 'language')) {
@@ -649,8 +694,8 @@ function grapesjs_preprocess_field (&$vars, $hook) {
 
   $element = $vars['element'];
 
-  if (isset ($element['#field_type']) && ($element['#field_type'] == 'text_with_summary' || $element['#field_type'] == 'text')) {
-    
+  if (isset ($element['#field_type']) && ($element['#field_type'] == 'text_with_summary' || $element['#field_type'] == 'text_long')) {
+        
     
 # ToDo
 #
@@ -661,7 +706,6 @@ function grapesjs_preprocess_field (&$vars, $hook) {
     $vars['classes_array'][] = 'grapesjs-editable-field';
     drupal_add_css (GRAPESJS_PATH . '/css/display.css');
 
-   
     $attach_lib = false;
 
     foreach ($vars['items'] as $delta => &$item) {

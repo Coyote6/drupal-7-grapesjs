@@ -1,6 +1,13 @@
 .not-gjs {
   display: none;
 }
+.gjs-button {
+  border: 1px solid #333333;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 10px;
+  padding: 10px 20px;
+}
 #gjs {
   font: normal 100%/1.1em Helvetica, sans-serif;
   height: 100%;
@@ -68,6 +75,11 @@
 .grapesjs-button--close:hover {
   color: #d278c9;
 }
+.gjs-mdl-dialog input {
+  font-size: 14px;
+  line-height: 1.4em;
+  padding: 5px;
+}
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   #gjs select {
     -webkit-appearance: none;
@@ -102,7 +114,9 @@
 .cke_dialog_background_cover {
   z-index: 999998 !important;
 }
-.cke_editor_editor1_dialog {
+.cke_editor_editor1_dialog,
+.cke_editor_editor2_dialog,
+.cke_editor_editor3_dialog {
   position: relative !important;
   z-index: 999999 !important;
 }

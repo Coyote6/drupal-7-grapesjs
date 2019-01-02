@@ -14,8 +14,9 @@ grapesjs.plugins.add ('txtBlock', function(editor, options) {
   		name: 'Text Block',
       propagate: '["editable", "droppable"]',
       attributes: {
-        'data-type':'text'
-      }
+        'data-type':'txt-block'
+      },
+      classes : ['txt-block']
 		});
 
 		
@@ -28,12 +29,12 @@ grapesjs.plugins.add ('txtBlock', function(editor, options) {
           if (
             typeof el.hasAttribute == "function" && 
             el.hasAttribute("data-type") && 
-            $(el).attr('data-type') == 'text-block'
+            $(el).attr('data-type') == 'txt-block'
           ) {
   					return {
     					type: 'txtBlock',
     					attributes: {
-    					  "data-type" : "text-block"
+    					  "data-type" : "txt-block"
               }
     				};
   				}
@@ -56,7 +57,7 @@ grapesjs.plugins.add ('txtBlock', function(editor, options) {
       },
       attributes: {
 			  class:'gjs-fonts gjs-f-text',
-        'data-type' : 'text'
+        'data-type' : 'txt-block',
      },
      activeOnRender: 1
     });

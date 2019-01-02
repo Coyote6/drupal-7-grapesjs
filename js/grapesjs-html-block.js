@@ -6,6 +6,10 @@ grapesjs.plugins.add('htmlBlock', function(editor, options) {
   addComponent();
   addBlock();
 
+  editor.on('load', function(){
+    addEditorStyles();
+  });
+  
   function addEditor() {
     editor.Commands.add("openHtmlCodeEditor", {
       run: function(editor, sender, data) {
@@ -57,9 +61,21 @@ grapesjs.plugins.add('htmlBlock', function(editor, options) {
     
     var defaultType = editor.DomComponents.getType('default');
     var _initToolbar = defaultType.model.prototype.initToolbar;
+    var defaults =  Object.assign({}, defaultType.model.prototype.defaults, {
+			name: 'Html Block',
+      editable: false,
+      droppable: false,
+		  draggable: true,
+		  propagate: ["editable","droppable","draggable", "selectable"],
+      attributes: {
+        'data-type':'html-block'
+      },
+      classes : ['html-block']
+		});  
 
     editor.DomComponents.addType('htmlCode', {
       model: defaultType.model.extend({
+        defaults: defaults,
         initToolbar(args) {
           _initToolbar.apply(this, args);
 
@@ -72,14 +88,17 @@ grapesjs.plugins.add('htmlBlock', function(editor, options) {
         }
       }, {
         isComponent: function(el) {
-          if (typeof el.hasAttribute == "function" && el.hasAttribute("data-html-code")) {
-            return {
-              type: "htmlCode",
-              attributes : {
-                "data-html-code" : ''
-              }
-            };
-          }
+          if (
+            typeof el.hasAttribute == "function" && 
+            el.hasAttribute("data-type") && 
+            $(el).attr('data-type') == 'html-block'
+          ) {
+  					return {
+    					type: 'htmlCode',
+              'data-type':'html-block'
+    				};
+  				}
+  				return '';
         }
       }),
       view: defaultType.view.extend({
@@ -98,9 +117,16 @@ grapesjs.plugins.add('htmlBlock', function(editor, options) {
       attributes: {class: "fa fa-code"},
       label: "HTML Code",
       category: 'Advanced',
-      content: '<div data-html-code>Double Click to Edit Code</div>'
+      content: '<div data-type="html-block" class="html-block placeholder">Double Click to Edit Code</div>'
     });
   };
+  
+  function addEditorStyles () {
+    var s = document.createElement('style');
+    s.innerHTML = '.html-block{padding:10px;}' +
+                  '.html-block .placeholder{color:#dfdfdf;}';
+    Drupal.grapesjs.instance.iframe.head.appendChild(s);
+	}
 
 });
 })(Drupal, jQuery, grapesjs);

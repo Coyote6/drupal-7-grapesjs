@@ -1,1 +1,2 @@
 .grapesjs-editable-field-item * {box-sizing:border-box;}
+.row-block{display:flex;align-items:flexstart;flex-wrap:no-wrap;}

@@ -40,6 +40,7 @@ function grapesjs_upload_form ($form, &$form_state) {
 
 function grapesjs_upload_form_submit ($form, &$form_state) {
   
+  
   $json = [
     'success' => false,
     'message' => 'Sorry, but the file(s) were unable to be uploaded.'

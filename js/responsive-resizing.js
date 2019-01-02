@@ -25,7 +25,7 @@ var responsiveResize = function ($) {
     iframes = {};
     imgs = {};
     
-    $('.grapesjs-editable-field iframe:not(.ignore-resize)').each (function () {
+    $('.grapesjs-editable-field iframe:not(.ignore-resize), .grapesjs-editable-field *:not(.ignore-resize) iframe:not(.ignore-resize)').each (function () {
     	
 			var src = $(this).attr('src');
 			var w = $(this).attr('width');
@@ -153,7 +153,7 @@ var responsiveResize = function ($) {
   
   resize = function () {
     
-    $('.grapesjs-editable-field iframe:not(.ignore-resize)').each (function () {
+    $('.grapesjs-editable-field iframe:not(.ignore-resize), .grapesjs-editable-field *:not(.ignore-resize) iframe:not(.ignore-resize)').each (function () {
 			
 			var src = $(this).attr('src');
 			
@@ -230,7 +230,7 @@ var responsiveResize = function ($) {
 		});
   };
   
-	$(document).ready(function(){
+	$(window).on('load', function(){
   	init();
   });  
 		

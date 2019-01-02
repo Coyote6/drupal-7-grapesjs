@@ -23,7 +23,8 @@ grapesjs.plugins.add ('columnBlock', function(editor, options) {
 		  draggable: ".row-block",
       attributes: {
         'data-type':'column-block'
-      }
+      },
+      classes : ['column-block']
 		});
 
     editor.DomComponents.addType('column', {
@@ -74,8 +75,7 @@ grapesjs.plugins.add ('columnBlock', function(editor, options) {
         'data-type':'column-block'
   		},
   		content: {
-  			type: 'column',
-  			content: '<div class="column-block" data-type="column-block"></div>'
+  			type: 'column'
       }
   	});
 	}

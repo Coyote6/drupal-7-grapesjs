@@ -23,7 +23,8 @@ grapesjs.plugins.add ('rowBlock', function(editor, options) {
 		  draggable: ["body", "article", "aside", "blockquote","div:not(.row-block)", "dd", "fieldset", "figcaption", "figure", "footer", "form", "header", "li", "main", "nav", "noscript", "output", "pre", "section", "th", "td"],
       attributes: {
         'data-type':'row-block'
-      }
+      },
+      classes : ['row-block']
 		});
 
     editor.DomComponents.addType('row', {
@@ -52,7 +53,6 @@ grapesjs.plugins.add ('rowBlock', function(editor, options) {
     
     editor.on('component:update', component => {
       if (component.attributes.type == 'row') {
-        $(component.view.el).addClass('row-block');
         var c = component.view.childrenView.collection.length;
         if (c > 0) {
           $(component.view.el).children('.placeholder').remove();
@@ -74,8 +74,8 @@ grapesjs.plugins.add ('rowBlock', function(editor, options) {
         'data-type':'row-block'
   		},
   		content: {
-  			type: 'row'
-      }
+  			type: 'row',
+      },
   	});
 	}
 	

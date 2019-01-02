@@ -217,6 +217,7 @@
       autorender: 1,
 //  forceClass: false,
  //     canvas: headElements,
+      allowScripts: 1,
       container : '#gjs',
       height: '100%',
       components: components,
@@ -487,7 +488,17 @@
         $('#gjs').hide();
 
         // Add a button in its place.
-        $('#' + id).hide().after('<div class="gjs-button-container" style="display: flex;align-items: center;justify-content: center;text-align: center;border: 1px solid #d1d1d1; height: 250px;"><div class="gjs-open button">Open Editor</div></div>').promise().done(function(){
+        $('#' + id).hide().after('<div class="gjs-button-container" style="display: flex;align-items: center;justify-content: center;text-align: center;border: 1px solid #d1d1d1; height: 250px;"><div class="gjs-open gjs-button button">Open Editor</div><div class="gjs-show-code gjs-button button">Show Code</div></div>').promise().done(function(){
+          $('.gjs-show-code').click(function(){
+            if ($(this).hasClass('active')) {
+              $(this).removeClass('active').html('Show Code');
+              $('#' + id).hide();
+            }
+            else {
+              $(this).addClass('active').html('Hide Code');
+              $('#' + id).show();
+            }
+          });
           $('.gjs-open').click(function(){
             $('#gjs').fadeIn().focus();
             $('body > *:not("#gjs")').addClass('not-gjs');
@@ -607,42 +618,41 @@
 
         if (status == 'success' && typeof (data) == 'object') {
           var uploadFormVals = {};
-          $('body').append('<div class="grapesjs-upload-form-container">' + data.form + '</div>').promise().done(function(){
-            var vals = $('.grapesjs-upload-form-container form').serializeArray();
-            for (var i in vals) {
-              if (typeof (vals[i]) == 'object') {
-                uploadFormVals[vals[i].name] = vals[i].value;
-              }
-              
+          
+          var div = document.createElement("div");
+          div.innerHTML = data.form;
+          
+          var vals = $(div).find('form').serializeArray();
+          for (var i in vals) {
+            if (typeof (vals[i]) == 'object') {
+              uploadFormVals[vals[i].name] = vals[i].value;
             }
             
-            // Note:
-            //  ajax_html_ids are necessary to post so that the form generation doesn't assign
-            //  used html ids to form elements
-            //
-            var ajax_html_ids = [];
-            $('[id]').each(function () {
-              ajax_html_ids.push(this.id);
-            });
-           
-            // Add special data needed to trick it into believing it was triggered by the upload button on the form.
-            uploadFormVals._triggering_element_name = 'op';
-            uploadFormVals._triggering_element_value = 'Submit';
-            uploadFormVals['ajax_html_ids[]'] = ajax_html_ids;
-            uploadFormVals['ajax_page_state[theme]'] = Drupal.settings.grapesjs.theme;
-            uploadFormVals['ajax_page_state[theme_token]'] = ''; // Not needed because we are viewing the default theme.
-            uploadFormVals['ajax_iframe_upload'] = 1;
-            
-            // Add this to our settings.
-            Drupal.grapesjs.uploadFormValues = uploadFormVals;
-
-            // Remove the form once we have the values.
-            $('.grapesjs-upload-form-container').remove();
-
-            // Now call the regular attach.
-            Drupal.grapesjs.attach (context);
-
+          }
+        
+          // Note:
+          //  ajax_html_ids are necessary to post so that the form generation doesn't assign
+          //  used html ids to form elements
+          //
+          var ajax_html_ids = [];
+          $('[id]').each(function () {
+            ajax_html_ids.push(this.id);
           });
+         
+          // Add special data needed to trick it into believing it was triggered by the upload button on the form.
+          uploadFormVals._triggering_element_name = 'op';
+          uploadFormVals._triggering_element_value = 'Submit';
+          uploadFormVals['ajax_html_ids[]'] = ajax_html_ids;
+          uploadFormVals['ajax_page_state[theme]'] = Drupal.settings.grapesjs.theme;
+          uploadFormVals['ajax_page_state[theme_token]'] = ''; // Not needed because we are viewing the default theme.
+          uploadFormVals['ajax_iframe_upload'] = 1;
+            
+          // Add this to our settings.
+          Drupal.grapesjs.uploadFormValues = uploadFormVals;
+
+          // Now call the regular attach.
+          Drupal.grapesjs.attach (context);
+
         }
        },
        error: function () {
@@ -689,7 +699,6 @@
       
     }
   };
-
   Drupal.behaviors.grapesjs = gjseditor;
   
   // Support CTools detach event.
