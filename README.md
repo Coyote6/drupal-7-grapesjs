@@ -1,3 +1,5 @@
+GrapesJs Editor
+
 # WARNING!
 This is just a sandbox at the moment.  Security checks are not in place and things are probably not done the proper way.  Use at your own risk!
 
@@ -5,12 +7,13 @@ This is just a sandbox at the moment.  Security checks are not in place and thin
 
 ## To Install & Configure:
 1. Place module in /sites/all/modules/custom folder or similar Drupal 7 module location.
-2. Download [GrapesJs](https://github.com/artf/grapesjs/tree/master) and place it in the /sites/all/libraries/ director and name the folder grapesjs. Current GrapesJs version this was built using is 0.14.27.
+2. Download [GrapesJs](https://github.com/artf/grapesjs/tree/master) and place it in the /sites/all/libraries/ director and name the folder grapesjs. Current GrapesJs version this was built using is 0.14.43.
 3. Download [CKEditor 4](https://ckeditor.com/ckeditor-4/download/) and place it in the /sites/all/libraries/ directory and name it ckeditor. Current CKEditor version this was built using is 4.9.2.
 4. Download [CKEditor 4 - Link Plugin](https://ckeditor.com/ckeditor-4/download/) and place it in the /sites/all/libraries/ckeditor/plugins directory and name it link.
 5. Download [CKEditor 4 - Shared Space Plugin](https://ckeditor.com/ckeditor-4/download/) and place it in the /sites/all/libraries/ckeditor/plugins directory and name it sharedspace.
 6. Install module from the modules page.
-7. Currently set to just work a text format with the machine name "visual\_editor", so you will need to create a new text format from the configs page /admin/config/content/formats/add and name it "Visual Editor" with the machine name of "visual\_editor".
+7. Make sure the "Overlay" module is shutoff, due to conflicting screen space.
+8. Currently set to just work a text format with the machine name "visual\_editor", so you will need to create a new text format from the configs page /admin/config/content/formats/add and name it "Visual Editor" with the machine name of "visual\_editor".
 
 ## To use:
 1. Go to an entity with text field and select the format you set GrapesJS to as the Text Editor "Visual Editor".
