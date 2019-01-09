@@ -119,6 +119,8 @@ function grapesjs_pre_render_text_format ($element) {
 
   if ($init === FALSE) {
 
+    $clean_urls = variable_get('clean_url', 0);
+
     $theme_key = variable_get ('theme_default','none');
     $entity_type = $element['#entity_type'];
     $entity = $element['#entity'];
@@ -126,16 +128,43 @@ function grapesjs_pre_render_text_format ($element) {
     $id = $wrapper->getIdentifier();
     $url = '';
     if ($id) {
-      $url = entity_uri ($entity_type, $entity);
+      $uri = entity_uri ($entity_type, $entity);
+      if (isset ($uri['path'])) {
+        if ($clean_urls) {
+          $url = '/' . $uri['path'];
+        }
+        else {
+          $url = '/?q=' . $uri['path'];
+        }
+      }
     }
+
+#
+# To Do:
+# Need to take into account when drupal is in sub folder
+#
+    $get_form_url = '/?q=editor/grapesjs/get-upload-form';
+    $get_assets_url = '/?q=editor/grapesjs/assets';
+    $upload_url = '/?q=editor/grapesjs/upload';
+    if ($clean_urls) {
+      $get_form_url = '/editor/grapesjs/get-upload-form';
+      $get_assets_url = '/editor/grapesjs/assets';
+      $upload_url = '/editor/grapesjs/upload';
+    }
+    
     $input_formats = [
       'visual_editor' => 'visual_editor'
     ];
+    
+
     $settings = [
       'theme' => $theme_key,
       'modulePath' => '/' . GRAPESJS_PATH,
       'inputFormats' => $input_formats,
-      'url' => $url, 
+      'url' => $url,
+      'getFormUrl' => $get_form_url,
+      'getAssetsUrl' => $get_assets_url,
+      'uploadUrl' => $upload_url, 
 #
 # ToDo
 # Create a config file and settings form to set the plugins and their options.
@@ -297,17 +326,36 @@ function grapesjs_entity_presave ($entity, $type) {
   if (!property_exists($entity, 'type')) {
     return;
   }
-  
+
   $fields = field_info_instances ($type, $entity->type);
   $lang = LANGUAGE_NONE;
   if (property_exists ($entity, 'language')) {
     $lang = $entity->language;
   }
-        
+
   $wrapper = entity_metadata_wrapper($type, $entity); 
-  $id = $wrapper->getIdentifier();     
+  $id = $wrapper->getIdentifier();    
     
-  $q = db_select ('file_usage', 'fu')
+  if ($id != '') {
+    _grapesjs_edit_file_usage ($entity, $type, $id, $fields, $lang);
+  }
+
+}
+
+
+/**
+ * Implements hook_entity_insert()
+ */
+function grapesjs_entity_insert ($entity, $type) {
+
+  // Recall the presave function, now that we have the id.
+  grapesjs_entity_presave ($entity, $type);
+
+}
+
+function _grapesjs_edit_file_usage ($entity, $type, $id, $fields, $lang) {
+  
+    $q = db_select ('file_usage', 'fu')
                   ->fields('fu')
                   ->condition('module','grapesjs')
                   ->condition('type', $type)
@@ -318,10 +366,10 @@ function grapesjs_entity_presave ($entity, $type) {
   while ($row = $q->fetchAssoc()) {
     $used_files[$row['id']] = $row;
   }
-                              
+
   foreach ($fields as $fn => $f) {
     $finfo = field_info_field ($fn);
-   if (
+    if (
       ($finfo['type'] == 'text_with_summary' || $finfo['type'] == 'text_with_summary') &&
       property_exists ($entity, $fn) && is_array ($entity->$fn) && 
       isset ($entity->$fn[$lang]) && is_array ($entity->$fn[$lang])
@@ -341,6 +389,7 @@ function grapesjs_entity_presave ($entity, $type) {
                 }
                 else {
                   $file = file_load($fid);
+                  print_r ($id);
                   if ($file) {
                     if ($file->status == 0) {
                       $file->status = 1;
@@ -365,6 +414,7 @@ function grapesjs_entity_presave ($entity, $type) {
     }
   }
 
+  
 }
 
 

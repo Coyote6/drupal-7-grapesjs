@@ -1,7 +1,9 @@
 (function (Drupal, $) {
+
   window.dsm = function (val){
     console.log(val);
   };
+    
   if (typeof (Drupal.grapesjs) == 'undefined') {
     Drupal.grapesjs = {
       instances : {},
@@ -36,7 +38,7 @@
   
     $.ajax({
       method: "POST",
-      url: "/editor/grapesjs/assets",
+      url: Drupal.settings.grapesjs.getAssetsUrl,
       data: {},
       success: function (data, status, jqxhr) {
         if (status == 'success' && typeof (data) == 'object') {
@@ -227,7 +229,7 @@
       plugins: Drupal.settings.grapesjs.plugins,
       pluginsOpts: pluginOpts,
       assetManager: {
-        upload: '/editor/grapesjs/upload',
+        upload: Drupal.settings.grapesjs.uploadUrl,
         uploadName: 'files',
         params: Drupal.grapesjs.uploadFormValues
       }
@@ -359,7 +361,6 @@
      
     Drupal.grapesjs.instance.editor = editor;
     
-    
     // Asset Manager must be called here and not the plugin.
     Drupal.grapesjs.addNewAssets(Drupal.settings.grapesjs.assets);    
     
@@ -374,7 +375,7 @@
     };
     var defaultHtml = $('#' + id).val();
     var url = Drupal.settings.grapesjs.url;
-    
+
     // Set the default head styles to prevent errors when the url is not set.
     var head = {
       css: [],
@@ -609,7 +610,7 @@
   Drupal.grapesjs.getUploadForm = function (context) {
     $.ajax({
        method: "POST",
-       url: "/editor/grapesjs/get-upload-form",
+       url: Drupal.settings.grapesjs.getFormUrl,
        data: {
         'fid' : 'upload',
        },
@@ -665,6 +666,7 @@
 
   var gjseditor = {
     attach: function (context) {
+console.log (Drupal.settings);
 
 //
 // To do!!!!
@@ -705,5 +707,5 @@
   $(document).bind('CToolsDetachBehaviors', function(event, context) {
     Drupal.behaviors.grapesjs.detach(context, {}, 'unload');
   });
-  
+ 
 })(Drupal, jQuery);
